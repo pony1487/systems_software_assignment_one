@@ -4,10 +4,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <time.h>
-#include "time_check.h"
-//#include "assignment_main_helpers.h"
 
-void runTimeCheck();
+
+#include "assignment_main_helpers.h"
+
+
 
 int main()
 {
@@ -29,26 +30,11 @@ int main()
     else if(pid > 0)
     {
         printf("parent:\n");
+        //testAssignmentMainHelpers();
+        //runTimeCheck();
+        testServer();
     }
     
 
     return 0;
-}
-
-
-void runTimeCheck()
-{
-    printf("runTimeCheck() started...");
-    while(1)
-        {
-        struct tm *current_time = get_current_time();
-        int is_backup_time = check_backup_time(current_time);
-
-        if(is_backup_time == 1)
-        {
-            printf("Backup!");
-            break;
-        }
-    }
-    
 }
