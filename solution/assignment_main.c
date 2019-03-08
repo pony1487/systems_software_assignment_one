@@ -25,14 +25,11 @@ int main()
     {
         printf("child");
         char * argv_list[] = {"message_queue_server",NULL};
-        execv("./assignment_queue_server",argv_list);
+        //execv("./assignment_queue_server",argv_list);
     }
     else if(pid > 0)
     {
         printf("parent:\n");
-        //testAssignmentMainHelpers();
-        //runTimeCheck();
-        testServer();
     }
     
 

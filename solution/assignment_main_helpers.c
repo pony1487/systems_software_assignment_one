@@ -2,31 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <mqueue.h>
-#include <time.h>
-#include "time_check.h"
 
 
-void runTimeCheck()
+void writeAccessLog()
 {
-    printf("runtTimeCheck() started....\n");
-    while(1)
-        {
-        struct tm *current_time = get_current_time();
-        int is_backup_time = check_backup_time(current_time);
-
-        if(is_backup_time == 1)
-        {
-            printf("Backup!");
-            break;
-        }
-    }
-    
+    printf("test write access log\n");
+    char cmd[100] = "sudo ausearch -f $AUDITD_PATH > ";
+    char filename[100] = "accesslog";
+    char ext[5] = ".txt";
 }
 
-void testAssignmentMainHelpers()
-{
-    printf("testAssignmentMainHelpers\n");
-}
 
 void testServer()
 {

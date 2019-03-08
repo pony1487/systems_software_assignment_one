@@ -2,7 +2,7 @@
 #define ASSIGNMENT_MAIN_H_
 
 void runTimeCheck();
-void testAssignmentMainHelpers();
+void writeAccessLog();
 void testServer();
 
 #endif

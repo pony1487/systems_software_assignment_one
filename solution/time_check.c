@@ -1,12 +1,17 @@
-#include "time_check.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
+#include "time_check.h"
+
+int HOUR = 17;
+int MIN = 4;
+int SEC = 0;
+
 int check_backup_time(struct tm *current_time)
 {
     //If the time is 21:0:0 return 1 as a flag for a backup is due
-    if(current_time->tm_hour == 21 && current_time->tm_min == 0 && current_time->tm_sec == 0)
+    if(current_time->tm_hour == HOUR && current_time->tm_min == MIN && current_time->tm_sec == SEC)
     {
         return 1;
     }
