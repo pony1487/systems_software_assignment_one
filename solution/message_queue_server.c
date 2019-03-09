@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <mqueue.h>
+#include <syslog.h>
 
 #define BUFFER_SIZE 1024
 
@@ -40,12 +41,17 @@ int main(int argc, char *argb[])
         }
         else
         {
-            printf("Received: %s\n",buffer);                
+            printf("Received: %s\n",buffer);      
+            openlog("message_queue_server", LOG_PID|LOG_CONS,LOG_USER);
+            syslog(LOG_INFO,buffer);          
         }
         
     }while(!terminate);
 
     mq_close(message_queue);
     mq_unlink(queue_name);
+
+    syslog(LOG_WARNING,"message_queue_server has stopped.");
+    closelog();
     return 0;
 }

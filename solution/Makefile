@@ -30,7 +30,7 @@ message_queue_server.o: message_queue_server.c
 ###################################################
 
 time_check_process: time_check_process.o $(time_process_objects)
-	$(CC) -o time_check_process time_check_process.o $(time_process_objects)
+	$(CC) -o time_check_process time_check_process.o $(time_process_objects) -lrt
 
 time_check_process.o : time_check_process.c $(time_process_headers)
 	$(CC) -c time_check_process.c
