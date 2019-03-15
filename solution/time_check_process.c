@@ -5,6 +5,7 @@ It will check if it is a particular time and then send that message to the messa
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <mqueue.h>
 #include <syslog.h>
@@ -13,53 +14,52 @@ It will check if it is a particular time and then send that message to the messa
 
 
 void runTimeCheck();
-void testServer();
+void sendMessageToServer(char *msg);
 
 int main(int argc, char *argv[])
 {
+    printf("time_check_process started....\n");
+    openlog("time_check_process", LOG_PID|LOG_CONS,LOG_USER);
 
     runTimeCheck();
+
+    syslog(LOG_WARNING,"time_check_process has stopped.");
+    closelog();
     return 0;
 }
 
 void runTimeCheck()
 {
-    openlog("time_check_process", LOG_PID|LOG_CONS,LOG_USER);
     syslog(LOG_INFO,"runtTimeCheck() started....");
 
-    
-    printf("runtTimeCheck() started....\n");
     while(1)
-        {
-        struct tm *current_time = get_current_time();
-        int is_backup_time = check_backup_time(current_time);
+    {
+    struct tm *current_time = get_current_time();
+    int is_backup_time = check_backup_time(current_time);
 
         if(is_backup_time == 1)
         {
-            printf("Backup!");
-            testServer();
+            sendMessageToServer("write_to_access_log");
+            sendMessageToServer("exit");
             syslog(LOG_INFO,"Backup time reached.");
+            //remove break to let the time check run indefinitley
             break;        
         }
     } 
-    syslog(LOG_WARNING,"time_check_process has stopped.");
-    closelog();
 }
 
-void testServer()
+
+void sendMessageToServer(char *msg)
 {
     char queue_name[] = "/assignment_queue";
-    printf("Testing message queue client\n");
-    printf("Queue name: %s\n",queue_name);
+    printf("sending %s to %s.\n",msg,queue_name);
     
     mqd_t mq;
-    char buffer[50] = "Its back up time!";
-    char exit_buffer[10] = "exit";
+    char buffer[50];
 
+    strcpy(buffer, msg);
     //open queue
     mq = mq_open(queue_name, O_WRONLY);
 
     mq_send(mq,buffer,sizeof(buffer),0);
-    mq_send(mq,exit_buffer,sizeof(exit_buffer),0);
-
 }

@@ -1,6 +1,12 @@
+/*
+This will accept messages and fork other processes depending on the message
+*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #include <mqueue.h>
 #include <syslog.h>
 
@@ -8,16 +14,23 @@
 
 int main(int argc, char *argb[])
 {
-    char queue_name[] = "/assignment_queue";
-    printf("Message_queue_server\n");
-    printf("Queue name: %s\n",queue_name);
-    
+    openlog("message_queue_server", LOG_PID|LOG_CONS,LOG_USER);
 
+    char queue_name[] = "/assignment_queue";
+    printf("Message_queue_server started...\n");
+
+    char log_info[50] = "Queue name: ";
+    strcat(log_info,queue_name);
+    printf("%s\n",log_info);
+
+    syslog(LOG_INFO,"Message_queue_server started..."); 
+    syslog(LOG_INFO,log_info); 
+    
 
     mqd_t message_queue;
     struct mq_attr queue_attributes;
     char buffer[BUFFER_SIZE + 1];
-    int terminate = 0;
+    int running = 1;
 
     //Set up queue attributes
     queue_attributes.mq_flags = 0;
@@ -35,18 +48,45 @@ int main(int argc, char *argb[])
         bytes_read = mq_receive(message_queue,buffer,BUFFER_SIZE,NULL);
 
         buffer[bytes_read] = '\0';
-        if(! strncmp(buffer,"exit",strlen("exit")))
+
+
+        printf("Received: %s\n",buffer);      
+        //write what was recieved to the syslog
+        syslog(LOG_INFO,buffer);  
+
+        if(strcmp(buffer,"write_to_access_log") == 0)
         {
-            terminate = 1;
+            printf("write_to_access_log\n");
+            syslog(LOG_INFO,"write_to_access_log message recieved"); 
+            pid_t pid;
+
+            int status;
+            pid_t wait_pid;
+
+            pid = fork();
+
+            if(pid < 0)
+            {
+                perror("Error: failed to fork");
+                exit(EXIT_FAILURE);
+            }
+            else if(pid == 0)
+            {
+                char * argv_list[] = {"log_change_process",NULL};
+                execv("./log_change_process",argv_list);
+            }
+
+
+            wait_pid = wait(&status);
+            printf("message_queuese_server: child %d exited with status 0x%x\n",pid,status);
+
         }
-        else
+        else if(strcmp(buffer,"exit") == 0)
         {
-            printf("Received: %s\n",buffer);      
-            openlog("message_queue_server", LOG_PID|LOG_CONS,LOG_USER);
-            syslog(LOG_INFO,buffer);          
+            running = 0;
         }
-        
-    }while(!terminate);
+
+    }while(running);
 
     mq_close(message_queue);
     mq_unlink(queue_name);
