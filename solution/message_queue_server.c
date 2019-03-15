@@ -10,6 +10,8 @@ This will accept messages and fork other processes depending on the message
 #include <mqueue.h>
 #include <syslog.h>
 
+#include "file_permissions.h"
+
 #define BUFFER_SIZE 1024
 
 int main(int argc, char *argb[])
@@ -79,6 +81,25 @@ int main(int argc, char *argb[])
 
             wait_pid = wait(&status);
             printf("message_queuese_server: child %d exited with status 0x%x\n",pid,status);
+
+        }
+        else if(strcmp(buffer,"backup") == 0)
+        {
+            printf("Backup message received\n");
+            //lockdown
+            printf("lockdown\n");
+            lock_dir();
+            printf("\ndir locked\n");
+            
+            sleep(10);
+
+            unlock_dir();
+            printf("\ndir unlocked\n");
+            //backup
+            printf("backup\n");
+
+            //transfer
+            printf("transfer\n");
 
         }
         else if(strcmp(buffer,"exit") == 0)

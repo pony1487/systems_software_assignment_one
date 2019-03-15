@@ -39,9 +39,12 @@ void runTimeCheck()
 
         if(is_backup_time == 1)
         {
-            sendMessageToServer("write_to_access_log");
-            sendMessageToServer("exit");
             syslog(LOG_INFO,"Backup time reached.");
+
+            sendMessageToServer("write_to_access_log");
+            sendMessageToServer("backup");
+
+            sendMessageToServer("exit");
             //remove break to let the time check run indefinitley
             break;        
         }

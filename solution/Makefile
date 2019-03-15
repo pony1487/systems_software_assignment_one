@@ -4,6 +4,8 @@ objects = assignment_main.o assignment_main_helpers.o
 time_process_headers =  time_check.h 
 time_process_objects =  time_check.o 
 
+assignment_queue_server_objects = file_permissions.o
+
 assignment_main_helpers_headers = assignment_main_helpers.h 
 
 # Each process
@@ -21,11 +23,14 @@ assignment_main_helpers.o : assignment_main_helpers.c
 
 # Below are the programs that are forked and execed from assignment_daemon
 ###################################################
-assignment_queue_server: message_queue_server.o
-	$(CC) -o assignment_queue_server message_queue_server.o -lrt
+assignment_queue_server: message_queue_server.o file_permissions.o 
+	$(CC) -o assignment_queue_server message_queue_server.o $(assignment_queue_server_objects)  -lrt
 
 message_queue_server.o: message_queue_server.c
-	$(CC) -c message_queue_server.c 
+	$(CC) -c message_queue_server.c
+
+file_permissions.o : file_permissions.c file_permissions.h
+	$(CC) -c file_permissions.c
 
 ###################################################
 
@@ -47,4 +52,4 @@ log_change_process.o : log_change_process.c
 	$(CC) -c log_change_process.c
 
 clean:
-	rm assignment_daemon assignment_queue_server time_check_process log_change_process $(objects) $(time_process_objects)
+	rm assignment_daemon assignment_queue_server time_check_process log_change_process $(objects) $(time_process_objects) $(assignment_queue_server_objects)

@@ -4,8 +4,8 @@
 
 #include "time_check.h"
 
-#define HOUR 12
-#define MIN 57
+#define HOUR 11
+#define MIN 45
 #define SEC 0
 
 int check_backup_time(struct tm *current_time)
