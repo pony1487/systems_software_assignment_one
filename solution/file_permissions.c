@@ -8,24 +8,24 @@
 
 void lock_dir()
 {
-    char mode[] ="0444";
+    char cmd[200] = "chmod -R 555 ";
+    strcat(cmd,DIR_PATH);
 
-    int i = strtol(mode,0,8);
-    if(chmod(DIR_PATH,i) < 0)
+    if(system(cmd) == -1)
     {
-        perror("Cant lock mode!\n");
-    } 
-
+        perror("Could not lock dir\n");
+    }
 }
 
 void unlock_dir()
 {
-    char mode[] ="0755";
 
-    int i = strtol(mode,0,8);
-    if(chmod(DIR_PATH,i) < 0)
+    char cmd[200] = "chmod -R 755 ";
+    strcat(cmd,DIR_PATH);
+
+    if(system(cmd) == -1)
     {
-        perror("Cant unlock mode!\n");
-    } 
+        perror("Could not unlock dir\n");
+    }
 
 }

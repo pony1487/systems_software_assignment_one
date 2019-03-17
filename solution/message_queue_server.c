@@ -11,6 +11,7 @@ This will accept messages and fork other processes depending on the message
 #include <syslog.h>
 
 #include "file_permissions.h"
+#include "backup_folder.h"
 
 #define BUFFER_SIZE 1024
 
@@ -89,15 +90,21 @@ int main(int argc, char *argb[])
             //lockdown
             printf("lockdown\n");
             lock_dir();
+            syslog(LOG_INFO,"Backup started. folder locked..."); 
+
             printf("\ndir locked\n");
             
-            sleep(10);
+            //backup
+            if(backup() == -1)
+            {
+                printf("Backup failed");
+                syslog(LOG_ERR,"Backup failed!"); 
+            }
 
             unlock_dir();
             printf("\ndir unlocked\n");
-            //backup
-            printf("backup\n");
-
+            syslog(LOG_INFO,"Backup complete. folder unlocked..."); 
+ 
             //transfer
             printf("transfer\n");
 
