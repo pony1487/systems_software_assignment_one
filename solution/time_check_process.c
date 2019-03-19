@@ -44,9 +44,9 @@ void runTimeCheck()
             sendMessageToServer("write_to_access_log");
             sendMessageToServer("backup");
 
-            sendMessageToServer("exit");
+            //sendMessageToServer("exit");
             //remove break to let the time check run indefinitley
-            break;        
+            //break;        
         }
     } 
 }

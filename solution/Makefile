@@ -4,7 +4,7 @@ objects = assignment_main.o assignment_main_helpers.o
 time_process_headers =  time_check.h 
 time_process_objects =  time_check.o 
 
-assignment_queue_server_objects = file_permissions.o backup_folder.o
+assignment_queue_server_objects = file_permissions.o backup_transfer.o
 
 assignment_main_helpers_headers = assignment_main_helpers.h 
 
@@ -23,7 +23,7 @@ assignment_main_helpers.o : assignment_main_helpers.c
 
 # Below are the programs that are forked and execed from assignment_daemon
 ###################################################
-assignment_queue_server: message_queue_server.o file_permissions.o backup_folder.o
+assignment_queue_server: message_queue_server.o file_permissions.o backup_transfer.o
 	$(CC) -o assignment_queue_server message_queue_server.o $(assignment_queue_server_objects)  -lrt
 
 message_queue_server.o: message_queue_server.c 
@@ -32,8 +32,8 @@ message_queue_server.o: message_queue_server.c
 file_permissions.o : file_permissions.c file_permissions.h
 	$(CC) -c file_permissions.c
 
-backup_folder.o : backup_folder.c backup_folder.h
-	$(CC) -c backup_folder.c
+backup_transfer.o : backup_transfer.c backup_transfer.h
+	$(CC) -c backup_transfer.c
 
 ###################################################
 

@@ -2,5 +2,6 @@
 #define BACKUP_H_
 
 int backup();
+int transfer();
 
 #endif

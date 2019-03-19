@@ -11,7 +11,7 @@ This will accept messages and fork other processes depending on the message
 #include <syslog.h>
 
 #include "file_permissions.h"
-#include "backup_folder.h"
+#include "backup_transfer.h"
 
 #define BUFFER_SIZE 1024
 
@@ -101,12 +101,17 @@ int main(int argc, char *argb[])
                 syslog(LOG_ERR,"Backup failed!"); 
             }
 
+             //transfer
+            printf("transfer\n");
+            if(transfer() == -1)
+            {
+                printf("Transfer to live failed");
+                syslog(LOG_ERR,"Transfer to live failed!"); 
+            }
+
             unlock_dir();
             printf("\ndir unlocked\n");
-            syslog(LOG_INFO,"Backup complete. folder unlocked..."); 
- 
-            //transfer
-            printf("transfer\n");
+            syslog(LOG_INFO,"Backup and Transfer complete. folder unlocked..."); 
 
         }
         else if(strcmp(buffer,"exit") == 0)
