@@ -3,7 +3,7 @@
 #include <string.h>
 #include <mqueue.h>
 
-
+//NOTHING USED IN THIS FILE
 void writeAccessLog()
 {
     printf("test write access log\n");
