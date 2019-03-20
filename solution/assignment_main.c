@@ -22,6 +22,8 @@ of an event.
 
 int main()
 {   
+
+    //Make it a daemon
     // int pid = fork();
 
     // if(pid > 0)

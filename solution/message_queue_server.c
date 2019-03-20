@@ -86,6 +86,11 @@ int main(int argc, char *argb[])
         }
         else if(strcmp(buffer,"backup") == 0)
         {
+            pid_t pid;
+
+            int status;
+            pid_t wait_pid;
+
             printf("Backup message received\n");
             //lockdown
             printf("lockdown\n");
@@ -94,26 +99,7 @@ int main(int argc, char *argb[])
 
             printf("\ndir locked\n");
             
-            // //backup
-            // if(backup() == -1)
-            // {
-            //     printf("Backup failed");
-            //     syslog(LOG_ERR,"Backup failed!"); 
-            // }
-
-            //  //transfer
-            // printf("transfer\n");
-            // if(transfer() == -1)
-            // {
-            //     printf("Transfer to live failed");
-            //     syslog(LOG_ERR,"Transfer to live failed!"); 
-            // }
-
-                        pid_t pid;
-
-            int status;
-            pid_t wait_pid;
-
+            // Backup
             pid = fork();
 
             if(pid < 0)
@@ -127,7 +113,9 @@ int main(int argc, char *argb[])
                 execv("./backup_transfer_process",argv_list);
             }
 
+            // Wait for backup to complete
             wait_pid = wait(&status);
+
             unlock_dir();
             printf("\ndir unlocked\n");
             syslog(LOG_INFO,"Backup and Transfer complete. folder unlocked..."); 
