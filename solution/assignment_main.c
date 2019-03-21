@@ -23,37 +23,37 @@ of an event.
 int main()
 {   
 
-    //Make it a daemon
-    // int pid = fork();
+    // Make it a daemon
+    int pid = fork();
 
-    // if(pid > 0)
-    // {
-    //     printf("Parent process..\n");
-    //     //sleep(10);
-    //     exit(EXIT_SUCCESS);
-    // }
-    // else if (pid == 0)
-    // {
-    //     printf("Child process..\n");
+    if(pid > 0)
+    {
+        printf("Parent process..\n");
+        //sleep(10);
+        exit(EXIT_SUCCESS);
+    }
+    else if (pid == 0)
+    {
+        printf("Child process..\n");
 
-    //     if(setsid() < 0)
-    //     {
-    //         exit(EXIT_FAILURE);
-    //     }
+        if(setsid() < 0)
+        {
+            exit(EXIT_FAILURE);
+        }
 
-    //     umask(0);
+        umask(0);
 
-    //     // The programs that are execv'd need to be moved to root for this work
-    //     // if(chdir("/") < 0)
-    //     // {
-    //     //     exit(EXIT_FAILURE);
-    //     // }
+        // The programs that are execv'd need to be moved to root for this work
+        // if(chdir("/") < 0)
+        // {
+        //     exit(EXIT_FAILURE);
+        // }
 
-    //     int x;
-    //     for(x = sysconf(_SC_OPEN_MAX); x>=0;x--)
-    //     {
-    //         close(x);
-    //     }
+        int x;
+        for(x = sysconf(_SC_OPEN_MAX); x>=0;x--)
+        {
+            close(x);
+        }
 
         
         openlog("assignment_daemon", LOG_PID|LOG_CONS,LOG_USER);
