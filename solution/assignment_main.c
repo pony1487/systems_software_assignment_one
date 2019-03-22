@@ -19,106 +19,148 @@ of an event.
 
 #include "assignment_main_helpers.h"
 
+#include <fcntl.h>
+#include <sys/file.h>
+#include <errno.h>
+
+
+
+#define PID_FILENAME "daemon.pid"
+
 void signal_handler(int sig)
 {
     char buffer[100];
     sprintf(buffer, "Caught signal %d", sig);
     syslog(LOG_WARNING, buffer);
+
+    if(sig == 9)
+    {
+        //program was killed via command line. Delete PID file as it not running anymore
+        int ret = remove(PID_FILENAME);
+
+        if(ret == 0) {
+            syslog(LOG_INFO, "PID_File deleted successfully");
+        } else {
+            syslog(LOG_ERR, "Error: unable to delete the PID_File");
+        }
+
+    }
 }
 
 int main()
 {
+    //File lock code taken from https://stackoverflow.com/questions/5339200/how-to-create-a-single-instance-application-in-c-or-c
 
-    // Make it a daemon
-    int pid = fork();
-
-    if (pid > 0)
-    {
-        printf("Parent process..\n");
-        //sleep(10);
-        exit(EXIT_SUCCESS);
+    int pid_file = open(PID_FILENAME, O_CREAT | O_RDWR, 0666);
+    int rc = flock(pid_file, LOCK_EX | LOCK_NB);
+    if(rc) {
+        if(EWOULDBLOCK == errno)
+        {
+            printf("Program already running\n");
+        }
     }
-    else if (pid == 0)
+    else
     {
-        printf("Child process..\n");
+        // Make it a daemon
+        int pid = fork();
 
-        if (setsid() < 0)
+        if (pid > 0)
         {
-            exit(EXIT_FAILURE);
+            printf("Parent process..\n");
+            //sleep(10);
+            exit(EXIT_SUCCESS);
         }
-
-        umask(0);
-
-        //NOTE: The programs that are execv'd need to be moved to root for this work
-        if (chdir("/") < 0)
+        else if (pid == 0)
         {
-            exit(EXIT_FAILURE);
-        }
+            printf("Child process..\n");
 
-        int x;
-        for (x = sysconf(_SC_OPEN_MAX); x >= 0; x--)
-        {
-            close(x);
-        }
-
-        //Open logs and write message
-        openlog("assignment_daemon", LOG_PID | LOG_CONS, LOG_USER);
-
-        syslog(LOG_INFO, "assignment_daemon started...");
-
-        //log any interupts
-        signal(SIGINT, signal_handler);
-
-        //for two children
-        int SIZE = 2;
-        pid_t child_pids[SIZE];
-        int num_of_children = SIZE;
-
-        for (int i = 0; i < num_of_children; i++)
-        {
-            if ((child_pids[i] = fork()) < 0)
+            if (setsid() < 0)
             {
-                perror("Error: failed to fork!\n");
-                syslog(LOG_ERR, "failed to fork...");
                 exit(EXIT_FAILURE);
             }
-            else if (child_pids[i] == 0)
+
+            umask(0);
+
+            //NOTE: The programs that are execv'd need to be moved to root for this work
+            // if (chdir("/") < 0)
+            // {
+            //     exit(EXIT_FAILURE);
+            // }
+
+            int x;
+            for (x = sysconf(_SC_OPEN_MAX); x >= 0; x--)
             {
+                close(x);
+            }
 
-                if (i == 0)
+            //Open logs and write message
+            openlog("assignment_daemon", LOG_PID | LOG_CONS, LOG_USER);
+
+            syslog(LOG_INFO, "assignment_daemon started...");
+
+            //log any interupts
+            signal(SIGINT, signal_handler);
+
+            //for two children
+            int SIZE = 2;
+            pid_t child_pids[SIZE];
+            int num_of_children = SIZE;
+
+            for (int i = 0; i < num_of_children; i++)
+            {
+                if ((child_pids[i] = fork()) < 0)
                 {
-                    syslog(LOG_INFO, "Forked message_server...");
-                    //run message server
-                    char *argv_list[] = {"message_queue_server", NULL};
-                    execv("./assignment_queue_server", argv_list);
+                    perror("Error: failed to fork!\n");
+                    syslog(LOG_ERR, "failed to fork...");
+                    exit(EXIT_FAILURE);
                 }
-
-                if (i == 1)
+                else if (child_pids[i] == 0)
                 {
-                    syslog(LOG_INFO, "Forked time_check...");
-                    //run time check
-                    char *argv_list[] = {"time_check_process", NULL};
-                    execv("./time_check_process", argv_list);
+
+                    if (i == 0)
+                    {
+                        syslog(LOG_INFO, "Forked message_server...");
+                        //run message server
+                        char *argv_list[] = {"message_queue_server", NULL};
+                        execv("./assignment_queue_server", argv_list);
+                    }
+
+                    if (i == 1)
+                    {
+                        syslog(LOG_INFO, "Forked time_check...");
+                        //run time check
+                        char *argv_list[] = {"time_check_process", NULL};
+                        execv("./time_check_process", argv_list);
+                    }
                 }
             }
+
+            //parent(daemon) wait for both children to exit
+            int status;
+            pid_t pid;
+            char exit_buffer[200];
+
+            while (num_of_children > 0)
+            {
+                pid = wait(&status);
+                sprintf(exit_buffer, "Child %d exited with status 0x%x", pid, status);
+
+                syslog(LOG_INFO, exit_buffer);
+
+                num_of_children--;
+            }
+
+            syslog(LOG_INFO, "assignment_daemon ended...");
         }
 
-        //parent(daemon) wait for both children to exit
-        int status;
-        pid_t pid;
-        char exit_buffer[200];
+        //if program ends normally remove pid file so it can be restarted
+        int ret = remove(PID_FILENAME);
 
-        while (num_of_children > 0)
-        {
-            pid = wait(&status);
-            sprintf(exit_buffer, "Child %d exited with status 0x%x", pid, status);
-
-            syslog(LOG_INFO, exit_buffer);
-
-            num_of_children--;
+        if(ret == 0) {
+            syslog(LOG_INFO, "PID_File deleted successfully");
+        } else {
+            syslog(LOG_ERR, "Error: unable to delete the PID_File");
         }
-
-        syslog(LOG_INFO, "assignment_daemon ended...");
     }
     return 0;
 }
