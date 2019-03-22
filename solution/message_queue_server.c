@@ -133,5 +133,6 @@ int main(int argc, char *argb[])
 
     syslog(LOG_WARNING,"message_queue_server has stopped.");
     closelog();
+    
     return 0;
 }
